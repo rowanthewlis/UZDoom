@@ -411,6 +411,13 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 			mat.Rotate(0, 1, 0, - Angles.Roll.Degrees());
 			mat.Translate(-center.X, -z, -center.Y);
 		}
+
+		else if (actor->renderflags & RF_PIVOTTOP)
+		{
+			mat.Rotate(0, 1, 0, - Angles.Roll.Degrees());
+			mat.Translate(x, z, y);
+		}
+			
 		else
 		{
 			mat.Rotate(0, 1, 0, - Angles.Roll.Degrees());
