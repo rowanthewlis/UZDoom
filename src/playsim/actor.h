@@ -482,6 +482,7 @@ enum ActorRenderFlag
 	RF_ROLLSPRITE		= 0x40000,	//[marrub]roll the sprite billboard
 	RF_DONTFLIP			= 0x80000,	// Don't flip it when viewed from behind.
 	RF_ROLLCENTER		= 0x00100000, // Rotate from the center of sprite instead of offsets
+	RF_PIVOTTOP			= 0x00500000, // [Dithered] Invert offsets to rotate from top of sprite instead of offsets
 	RF_MASKROTATION		= 0x00200000, // [MC] Only draw the actor when viewed from a certain angle range.
 	RF_ABSMASKANGLE		= 0x00400000, // [MC] The mask rotation does not offset by the actor's angle.
 	RF_ABSMASKPITCH		= 0x00800000, // [MC] The mask rotation does not offset by the actor's pitch.
