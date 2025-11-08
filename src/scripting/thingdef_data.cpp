@@ -370,6 +370,7 @@ static FFlagDef ActorFlagDefs[]=
 	DEFINE_FLAG(RF, WALLSPRITE, AActor, renderflags),
 	DEFINE_FLAG(RF, DONTFLIP, AActor, renderflags),
 	DEFINE_FLAG(RF, ROLLCENTER, AActor, renderflags),
+	DEFINE_FLAG(RF, PIVOTTOP, AActor, renderflags),
 	DEFINE_FLAG(RF, MASKROTATION, AActor, renderflags),
 	DEFINE_FLAG(RF, ABSMASKANGLE, AActor, renderflags),
 	DEFINE_FLAG(RF, ABSMASKPITCH, AActor, renderflags),
