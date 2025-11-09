@@ -455,7 +455,8 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 
 	// [Nash] is a flat sprite
 	const bool isWallSprite = (actor != nullptr) && (spritetype == RF_WALLSPRITE);
-	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)) || (particle && !(particle->flags & SPF_ROLLCENTER));
+	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)|| (actor->renderflags & RF_PIVOTTOP)) || (particle && !(particle->flags & SPF_ROLLCENTER));
+	const bool pivotTop = ((actor != nullptr) && (actor->renderflags & RF_PIVOTTOP));
 
 	FVector2 offset = FVector2( offx, offy );
 	float xx = -center.X + x;
@@ -562,13 +563,15 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 				}
 
 				mat.Translate(center.X, center.Z, center.Y);
-				if (useOffsets) mat.Translate(xx, zz, yy);
+				if (pivotTop) mat.Translate(-xx, -zz, -yy);
+				else if (useOffsets) mat.Translate(xx, zz, yy);
 				mat.Scale(1.0, 1.0/pixelstretch, 1.0);	// unstretch sprite by level aspect ratio
 				if (AngledRoll) mat.Rotate(0.0, 1.0, 0.0, -HWAngles.Yaw.Degrees()); // Cancel regular Y-billboarding
 				mat.Rotate(cos(angleRad), 0, sin(angleRad), rollDegrees);
 				if (AngledRoll) mat.Rotate(0.0, 1.0, 0.0, pitchDegrees); // New Y-billboarding about rolled z-axis
 				mat.Scale(1.0, pixelstretch, 1.0);	// stretch sprite by level aspect ratio
-				if (useOffsets) mat.Translate(-xx, -zz, -yy);
+				if (pivotTop) mat.Translate(xx, zz, yy);
+				else if (useOffsets) mat.Translate(-xx, -zz, -yy);
 				mat.Translate(-center.X, -center.Z, -center.Y);
 			}
 
