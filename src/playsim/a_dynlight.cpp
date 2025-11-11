@@ -381,11 +381,40 @@ void FDynamicLight::UpdateLocation()
 		AActor *target = this->target;	// perform the read barrier only once.
 
 		// Offset is calculated in relation to the owning actor.
+		//DAngle angle = target->Angles.Yaw;
+		//double s = angle.Sin();
+		//double c = angle.Cos();
+
+		//Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
+		// Offset is calculated in relation to the owning actor.
 		DAngle angle = target->Angles.Yaw;
+		DAngle pitch = pPitch != nullptr ? *pPitch : target->Angles.Pitch;
+		
+		// @Cockatrice - Hack alert, this is a special case for spotlights attached to actors parented to the player
+		// This is to prevent "laggy" flashlights that don't follow the camera perfectly
+		// companion code in hw_dynlightdata.cpp for frame-perfect implementation
+		if(target->master && target->master->player == &players[consoleplayer]) {
+			angle = target->master->Angles.Yaw;
+			pitch = target->master->Angles.Pitch;
+			// TODO: Add view offsets to these angles
+			// In the future if we add significant rotational offsets, the spotlight sector/linedef links might not be correct enough
+			// to avoid obvious cutoffs
+		}
+		
+		bool angleChanged = IsSpot() && (LastAngle != angle || LastPitch != *pPitch);
+		LastAngle = angle;
+		LastPitch = pitch;
+
 		double s = angle.Sin();
 		double c = angle.Cos();
 
-		Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
+		if (LastPos.isZero()) {
+			LastPos = Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
+		} else {
+			LastPos = Pos;
+			Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
+		}
+		
 		Sector = target->subsector->sector;	// Get the render sector. target->Sector is the sector according to play logic.
 
 		if (!(target->flags5 & MF5_NOINTERACTION))
