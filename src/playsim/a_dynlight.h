@@ -250,6 +250,11 @@ struct FDynamicLight
 	void UnlinkLight();
 	void ReleaseLight();
 
+	// [Dithered] For Interpolation 
+	void SaveInterpolationState();
+	void ClearInterpolation();
+	DVector3 GetInterpolatedPos(double frac) const;
+
 private:
 	double DistToSeg(const DVector3 &pos, vertex_t *start, vertex_t *end);
 	void CollectWithinRadius(const DVector3 &pos, FSection *section, float radius);
@@ -259,6 +264,9 @@ public:
 	DVector3 Pos;
 	DVector3 m_off;
 
+	// Interpolation fields
+	DVector3 PrevPos;
+	bool m_interpolate;
 	// This date can either come from the owning actor or from a light definition
 	// To avoid having to copy these around every tic, these are pointers to the source data.
 	const DAngle *pSpotInnerAngle;
