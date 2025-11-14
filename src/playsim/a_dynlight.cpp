@@ -970,4 +970,41 @@ void FLevelLocals::RecreateAllAttachedLights()
 			}
 		}
 	}
+
+	//==========================================================================
+//
+// FDynamicLight :: SaveInterpolationState
+//
+//==========================================================================
+
+void FDynamicLight::SaveInterpolationState()
+{
+	PrevPos = Pos;
+}
+
+//==========================================================================
+//
+// FDynamicLight :: ClearInterpolation
+//
+//==========================================================================
+
+void FDynamicLight::ClearInterpolation()
+{
+	PrevPos = Pos;
+}
+
+//==========================================================================
+//
+// FDynamicLight :: GetInterpolatedPos
+//
+//==========================================================================
+
+DVector3 FDynamicLight::GetInterpolatedPos(double frac) const
+{
+	if (!m_interpolate)
+		return Pos;
+	
+	return PrevPos + (Pos - PrevPos) * frac;
+}
+	
 }
