@@ -3052,6 +3052,11 @@ static bool System_DisableTextureFilter()
 	return !V_IsHardwareRenderer();
 }
 
+static bool System_DisableAnisotropicFiltering()
+{
+	return V_DisableIntelMipmap();
+}
+
 static void System_OnScreenSizeChanged()
 {
 	if (StatusBar != NULL)
@@ -3956,7 +3961,8 @@ static int D_DoomMain_Internal (void)
 		OkForLocalization,
 		[]() ->FConfigFile* { return GameConfig; },
 		nullptr,
-		RemapUserTranslation
+		RemapUserTranslation,
+		System_DisableAnisotropicFiltering
 	};
 
 	std::set_new_handler(NewFailure);
