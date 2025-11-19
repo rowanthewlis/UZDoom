@@ -277,14 +277,10 @@ void P_Ticker (void)
 		Level->time++;
 		Level->maptime++;
 		Level->totaltime++;
-	}
-
-	// Save interpolation state for dynamic lights
-	for (auto Level : AllLevels())
-	{
+	
+		// Save interpolation state for dynamic lights
 		for (FDynamicLight* light = Level->lights; light != nullptr; light = light->next)
 		{
 			light->SaveInterpolationState();
 		}
-	}
 }
