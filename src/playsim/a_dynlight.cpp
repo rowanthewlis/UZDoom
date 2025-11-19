@@ -392,11 +392,30 @@ void FDynamicLight::UpdateLocation()
 		if (IsSpot())
 		{
 			Yaw = angle;
-			if (!explicitpitch)
+			if (!explicitpitch) // [Dithered] todo: Can we use this to exploit pitch manually? 
 				Pitch = target->Angles.Pitch;
 		}
 
 		Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
+
+		//[Dithered] Need to check for teleport/ portals and clear interpolation
+		double distCheck = 128.0 const;
+		double distSquared = (Pos.X - PrevPos.X) * (Pos.X - PrevPos.X) + 
+		                (Pos.Y - PrevPos.Y) * (Pos.Y - PrevPos.Y) + 
+		                (Pos.Z - PrevPos.Z) * (Pos.Z - PrevPos.Z);
+		if (distSquared > distCheck * distCheck)  // Moved more than 128 units in one tic
+		{
+			ClearInterpolation();
+		}
+
+		//[Dithered] PrevPos will start at 0.0, clear interpolation until there is a 'valid' pos. 
+		//For newly created lights
+		if (PrevPos.X == 0.0 && PrevPos.Y == 0.0 && PrevPos.Z == 0.0 && 
+		    (Pos.X != 0.0 || Pos.Y != 0.0 || Pos.Z != 0.0))
+		{
+			ClearInterpolation();
+		}
+		
 		Sector = target->subsector->sector;	// Get the render sector. target->Sector is the sector according to play logic.
 
 		if (!(target->flags5 & MF5_NOINTERACTION))
@@ -424,12 +443,22 @@ void FDynamicLight::UpdateLocation()
 		radius = intensity * 2.0f;
 		if (radius < m_currentRadius * 2) radius = m_currentRadius * 2;
 
-		if (X() != oldx || Y() != oldy || radius != oldradius)
+		
+		//[Dithered] To be clear, this is Boon's idea that I threw in to test. Didn't notice a massive difference
+		//but not thoroughly tested. Out of my depth at this point though :)
+		//Only relink if the light moved more than 25% of its radius.
+		
+		//if (X() != oldx || Y() != oldy || radius != oldradius) //old code if revert needed
+		
+		double moveDist = (X() - oldx) * (X() - oldx) + (Y() - oldy) * (Y() - oldy);
+		if (moveDist > radius * radius * 0.025 || radius != oldradius) 
 		{
 			//Update the light lists
 			LinkLight();
 		}
 	}
+
+	else ClearInterpolation();
 }
 
 //=============================================================================
@@ -978,32 +1007,44 @@ void FLevelLocals::RecreateAllAttachedLights()
 			}
 		}
 	}
-
-	//==========================================================================
+}
+//==========================================================================
 //
-// FDynamicLight :: SaveInterpolationState
+// Called each tic to save the current position and angles for interpolation
 //
 //==========================================================================
 
 void FDynamicLight::SaveInterpolationState()
 {
 	PrevPos = Pos;
+	if (target != nullptr)
+	{
+		PrevAngle = target->Angles.Yaw;
+		PrevPitch = target->Angles.Pitch;
+	}
 }
 
 //==========================================================================
 //
-// FDynamicLight :: ClearInterpolation
+// Resets interpolation by setting previous state equal to current state.
+// Need this to avoid sliding over large distances. EG teleportation. 
 //
 //==========================================================================
 
 void FDynamicLight::ClearInterpolation()
 {
 	PrevPos = Pos;
+
+	if (target != nullptr)
+	{
+		PrevAngle = target->Angles.Yaw;
+		PrevPitch = target->Angles.Pitch;
+	}
 }
 
 //==========================================================================
 //
-// FDynamicLight :: GetInterpolatedPos
+// Interpolated between the previous tic and current tic using ticFrac.
 //
 //==========================================================================
 
@@ -1014,5 +1055,33 @@ DVector3 FDynamicLight::GetInterpolatedPos(double frac) const
 	
 	return PrevPos + (Pos - PrevPos) * frac;
 }
+
+//==========================================================================
+//
+// Interpolate Angles
+//
+//==========================================================================
+
+DAngle FDynamicLight::GetInterpolatedAngle(double frac) const
+{
+	if (!m_interpolate || target == nullptr)
+		return target != nullptr ? target->Angles.Yaw : DAngle::fromDeg(0);
 	
+	DAngle delta = deltaangle(PrevAngle, target->Angles.Yaw);
+	return PrevAngle + delta * frac;
+}
+
+//==========================================================================
+//
+// Interpolated Pitch
+//
+//==========================================================================
+
+DAngle FDynamicLight::GetInterpolatedPitch(double frac) const
+{
+	if (!m_interpolate || target == nullptr)
+		return target != nullptr ? target->Angles.Pitch : DAngle::fromDeg(0);
+	
+	DAngle delta = deltaangle(PrevPitch, target->Angles.Pitch);
+	return PrevPitch + delta * frac;
 }
