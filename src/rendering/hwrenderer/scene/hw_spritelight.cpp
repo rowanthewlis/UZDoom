@@ -38,7 +38,7 @@
 #include "hwrenderer/scene/hw_drawstructs.h"
 #include "models.h"
 #include <cmath>	// needed for std::floor on mac
-
+#include "r_utility.h"
 template<class T>
 T smoothstep(const T edge0, const T edge1, const T x)
 {
@@ -276,7 +276,7 @@ void hw_GetDynModelLight(AActor *self, FDynLightData &modellightdata)
 						{
 							if (std::find(addedLights.begin(), addedLights.end(), light) == addedLights.end()) // Check if we already added this light from a different subsector
 							{
-								AddLightToList(modellightdata, group, light, true);
+								AddLightToList(modellightdata, group, light, true,  r_viewpoint.TicFrac);
 								addedLights.Push(light);
 							}
 						}
