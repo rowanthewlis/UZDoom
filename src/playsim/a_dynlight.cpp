@@ -97,6 +97,7 @@ static FDynamicLight *GetLight(FLevelLocals *Level)
 	ret->mShadowmapIndex = 1024;
 	ret->Level = Level;
 	ret->Pos.X = -10000000;	// not a valid coordinate.
+	ret->m_interpolate = true;
 	return ret;
 }
 
