@@ -51,9 +51,11 @@ CVAR (Bool, gl_light_particles, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG);
 // Sets up the parameters to render one dynamic light onto one plane
 //
 //==========================================================================
-bool GetLight(FDynLightData& dld, int group, Plane & p, FDynamicLight * light, bool checkside)
+bool GetLight(FDynLightData& dld, int group, Plane & p, FDynamicLight * light, bool checkside, double interpFrac)
 {
-	DVector3 pos = light->PosRelative(group);
+	//interpolated pos
+	DVector3 iPos = light->GetInterpolatedPos(interpFrac);
+	DVector3 pos = iPos + light->Level->Displacements.getOffset(light->Sector->PortalGroup, group);
 	float radius = (light->GetRadius());
 
 	auto dist = fabs(p.DistToPoint((float)pos.X, (float)pos.Z, (float)pos.Y));
@@ -65,7 +67,7 @@ bool GetLight(FDynLightData& dld, int group, Plane & p, FDynamicLight * light, b
 		return false;
 	}
 
-	AddLightToList(dld, group, light, false);
+	AddLightToList(dld, group, light, false, interpFrac);
 	return true;
 }
 
@@ -74,11 +76,13 @@ bool GetLight(FDynLightData& dld, int group, Plane & p, FDynamicLight * light, b
 // Add one dynamic light to the light data list
 //
 //==========================================================================
-void AddLightToList(FDynLightData &dld, int group, FDynamicLight * light, bool forceAttenuate)
+void AddLightToList(FDynLightData &dld, int group, FDynamicLight * light, bool forceAttenuate, double interpFrac)
 {
 	int i = 0;
 
-	DVector3 pos = light->PosRelative(group);
+	//DVector3 pos = light->PosRelative(group);
+	DVector3 iPos = light->GetInterpolatedPos(interpFrac);
+	DVector3 pos = iPos + light->Level->Displacements.getOffset(light->Sector->PortalGroup, group);
 	float radius = light->GetRadius();
 
 	float cs;
@@ -134,8 +138,30 @@ void AddLightToList(FDynLightData &dld, int group, FDynamicLight * light, bool f
 		spotInnerAngle = (float)light->pSpotInnerAngle->Cos();
 		spotOuterAngle = (float)light->pSpotOuterAngle->Cos();
 
-		DAngle negPitch = -light->Pitch;
-		DAngle Angle = light->Yaw;
+		DAngle negPitch;
+		DAngle Angle;
+		
+		//[Dithered] Using Selaco's implementation here for a smooth angled/pitched flashlight. This currently has a drawback of not being able to override angle
+		//or pitch for these lights. Use case being 'sprung' movement for pitch and angle.
+		
+		// @Cockatrice - If this light is attached to the current player, instead of interpolating the light we will use the direct view values of the player
+		if (light->target->player && light->target->player == &players[consoleplayer]) {
+			Angle = r_viewpoint.Angles.Yaw;
+			negPitch = -r_viewpoint.Angles.Pitch;
+		}
+		// @Cockatrice - Hack alert, this is a special case for spotlights attached to actors parented to the player
+		// This is to prevent "laggy" flashlights that don't follow the camera perfectly
+		else if (light->target->master && light->target->master->player == &players[consoleplayer]) {
+			Angle = r_viewpoint.Angles.Yaw;
+			negPitch = -r_viewpoint.Angles.Pitch;
+		}
+
+		else //[D] use our interpolated angles
+		{
+			negPitch = -light->GetInterpolatedPitch(interpFrac);
+			Angle = light->GetInterpolatedAngle(interpFrac);
+		}
+		
 		double xzLen = negPitch.Cos();
 		spotDirX = float(-Angle.Cos() * xzLen);
 		spotDirY = float(-negPitch.Sin());
