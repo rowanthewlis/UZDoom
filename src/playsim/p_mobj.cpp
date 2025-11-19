@@ -7440,30 +7440,39 @@ foundone:
 	{
 		if (smallsplash && splash->SmallSplash)
 		{
-			mo = Spawn(sec->Level, splash->SmallSplash, pos, ALLOW_REPLACE);
-			mo->target = thing;
-			if (mo) mo->Floorclip += splash->SmallSplashClip;
+			if (!thing->IsClientSide() || GetDefaultByType(splash->SmallSplash)->IsClientSide())
+			{
+				mo = Spawn(sec->Level, splash->SmallSplash, pos, ALLOW_REPLACE);
+				mo->target = thing;
+				if (mo) mo->Floorclip += splash->SmallSplashClip;
+			}
 		}
 		else
 		{
 			if (splash->SplashChunk)
 			{
-				mo = Spawn(sec->Level, splash->SplashChunk, pos, ALLOW_REPLACE);
-				mo->target = thing;
-				if (splash->ChunkXVelShift != 255)
+				if (!thing->IsClientSide() || GetDefaultByType(splash->SplashChunk)->IsClientSide())
 				{
-					mo->Vel.X = (pr_chunk.Random2() << splash->ChunkXVelShift) / 65536.;
+					mo = Spawn(sec->Level, splash->SplashChunk, pos, ALLOW_REPLACE);
+					mo->target = thing;
+					if (splash->ChunkXVelShift != 255)
+					{
+						mo->Vel.X = (pr_chunk.Random2() << splash->ChunkXVelShift) / 65536.;
+					}
+					if (splash->ChunkYVelShift != 255)
+					{
+						mo->Vel.Y = (pr_chunk.Random2() << splash->ChunkYVelShift) / 65536.;
+					}
+					mo->Vel.Z = splash->ChunkBaseZVel + (pr_chunk() << splash->ChunkZVelShift) / 65536.;
 				}
-				if (splash->ChunkYVelShift != 255)
-				{
-					mo->Vel.Y = (pr_chunk.Random2() << splash->ChunkYVelShift) / 65536.;
-				}
-				mo->Vel.Z = splash->ChunkBaseZVel + (pr_chunk() << splash->ChunkZVelShift) / 65536.;
 			}
 			if (splash->SplashBase)
 			{
-				mo = Spawn(sec->Level, splash->SplashBase, pos, ALLOW_REPLACE);
-				mo->target = thing;
+				if (!thing->IsClientSide() || GetDefaultByType(splash->SplashBase)->IsClientSide())
+				{
+					mo = Spawn(sec->Level, splash->SplashBase, pos, ALLOW_REPLACE);
+					mo->target = thing;
+				}
 			}
 			if (thing->player && !splash->NoAlert && alert)
 			{
@@ -7511,8 +7520,6 @@ DEFINE_ACTION_FUNCTION(AActor, HitWater)
 
 bool P_HitFloor (AActor *thing)
 {
-	const msecnode_t *m;
-
 	// killough 11/98: touchy objects explode on impact
 	// Allow very short drops to be safe, so that a touchy can be summoned without exploding.
 	if (thing->flags6 & MF6_TOUCHY && ((thing->flags6 & MF6_ARMED) || thing->IsSentient()) && thing->Vel.Z < -5)
@@ -7524,34 +7531,68 @@ bool P_HitFloor (AActor *thing)
 
 	// don't splash if landing on the edge above water/lava/etc....
 	DVector3 pos;
-	for (m = thing->touching_sectorlist; m; m = m->m_tnext)
+	sector_t* sec = nullptr;
+	if (thing->IsClientSide())
 	{
-		pos = thing->PosRelative(m->m_sector);
-		if (thing->Z() == m->m_sector->floorplane.ZatPoint(pos))
+		if (thing->Sector != nullptr)
 		{
-			break;
-		}
-
-		// Check 3D floors
-		for(unsigned int i=0;i<m->m_sector->e->XFloor.ffloors.Size();i++)
-		{		
-			F3DFloor * rover = m->m_sector->e->XFloor.ffloors[i];
-			if (!(rover->flags & FF_EXISTS)) continue;
-			if (rover->flags & (FF_SOLID|FF_SWIMMABLE))
+			sec = thing->Sector;
+			pos = thing->Pos();
+			if (thing->Z() != sec->floorplane.ZatPoint(pos))
 			{
-				if (rover->top.plane->ZatPoint(pos) == thing->Z())
+				// Check 3D floors
+				for (unsigned int i = 0; i < sec->e->XFloor.ffloors.Size(); i++)
 				{
-					return P_HitWater (thing, m->m_sector, pos);
+					F3DFloor* rover = sec->e->XFloor.ffloors[i];
+					if (!(rover->flags & FF_EXISTS)) continue;
+					if (rover->flags & (FF_SOLID | FF_SWIMMABLE))
+					{
+						if (rover->top.plane->ZatPoint(pos) == thing->Z())
+						{
+							return P_HitWater(thing, sec, pos);
+						}
+					}
 				}
+				sec = nullptr;
 			}
 		}
 	}
-	if (m == NULL || m->m_sector->GetHeightSec() != NULL)
-	{ 
+	else
+	{
+		const msecnode_t* m;
+		for (m = thing->touching_sectorlist; m != nullptr; m = m->m_tnext)
+		{
+			sec = m->m_sector;
+			pos = thing->PosRelative(sec);
+			if (thing->Z() == sec->floorplane.ZatPoint(pos))
+			{
+				break;
+			}
+
+			// Check 3D floors
+			for (unsigned int i = 0; i < sec->e->XFloor.ffloors.Size(); i++)
+			{
+				F3DFloor* rover = sec->e->XFloor.ffloors[i];
+				if (!(rover->flags & FF_EXISTS)) continue;
+				if (rover->flags & (FF_SOLID | FF_SWIMMABLE))
+				{
+					if (rover->top.plane->ZatPoint(pos) == thing->Z())
+					{
+						return P_HitWater(thing, sec, pos);
+					}
+				}
+			}
+		}
+		if (m == nullptr)
+			sec = nullptr;
+	}
+
+	if (sec == nullptr || sec->GetHeightSec() != nullptr)
+	{
 		return false;
 	}
 
-	return P_HitWater (thing, m->m_sector, pos);
+	return P_HitWater (thing, sec, pos);
 }
 
 DEFINE_ACTION_FUNCTION(AActor, HitFloor)

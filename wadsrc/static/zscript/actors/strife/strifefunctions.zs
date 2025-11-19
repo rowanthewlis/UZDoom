@@ -54,21 +54,24 @@ extend class Actor
 	//
 	//==========================================================================
 
-	void A_TossGib()
+	Actor A_TossGib(class<Actor> gibtype = null, double zOfs = 24.0)
 	{
-		class <Actor> gibtype;
-		if (bNoBlood) gibtype = "Junk";
-		else gibtype = "Meat";
-		Actor gib = Spawn (gibtype, pos + (0,0,24), ALLOW_REPLACE);
+		if (!gibtype)
+		{
+			if (bNoBlood) gibtype = "Junk";
+			else gibtype = "Meat";
+		}
+		Actor gib = Spawn (gibtype, pos.PlusZ(zOfs), ALLOW_REPLACE);
 
 		if (gib == null)
 		{
-			return;
+			return null;
 		}
 
 		gib.Angle = random[GibTosser]() * (360 / 256.);
 		gib.VelFromAngle(random[GibTosser](0, 15));
 		gib.Vel.Z = random[GibTosser](0, 15);
+		return gib;
 	}
 
 	//==========================================================================

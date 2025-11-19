@@ -86,9 +86,92 @@ enum PSPAlign
 	PSPA_RIGHT = 2
 };
 
+enum EPSPBobType
+{
+	PSPB_None,
+	PSPB_2D,
+	PSPB_3D,
+};
+
 struct WeaponInterp
 {
 	FVector2 v[4];
+};
+
+struct FPlayerBob
+{
+	struct FWeaponBobInfo {
+		int Tic2D = -1;
+		FVector2 Bob2D = {};
+
+		int Tic3D = -1;
+		FVector3 Translation = {};
+		FVector3 Rotation = {};
+
+		void Clear2D()
+		{
+			Tic2D = -1;
+			Bob2D = {};
+		}
+
+		void Clear3D()
+		{
+			Tic3D = -1;
+			Translation = Rotation = {};
+		}
+
+		void Clear()
+		{
+			Clear2D();
+			Clear3D();
+		}
+	};
+
+	FWeaponBobInfo BobInfo = {}, PrevBobInfo = {};
+
+	void SetBob2D(int tic, FVector2 bob)
+	{
+		BobInfo.Tic2D = tic;
+		BobInfo.Bob2D = bob;
+		if (PrevBobInfo.Tic2D < 0 || BobInfo.Tic2D - PrevBobInfo.Tic2D != 1)
+			PrevBobInfo = BobInfo;
+	}
+
+	void SetBob3D(int tic, const FVector3& trans, const FVector3& rot)
+	{
+		BobInfo.Tic3D = tic;
+		BobInfo.Translation = trans;
+		BobInfo.Rotation = rot;
+		if (PrevBobInfo.Tic3D < 0 || BobInfo.Tic3D - PrevBobInfo.Tic3D != 1)
+			PrevBobInfo = BobInfo;
+	}
+
+	void UpdateInterpolation(bool sprite)
+	{
+		if (sprite)
+			BobInfo.Clear3D();
+		else
+			BobInfo.Clear2D();
+
+		PrevBobInfo = BobInfo;
+	}
+
+	void ResetInterpolation()
+	{
+		BobInfo.Clear();
+		PrevBobInfo.Clear();
+	}
+
+	FVector2 Interpolate2D(double ticFrac) const
+	{
+		return PrevBobInfo.Bob2D * (1.0 - ticFrac) + BobInfo.Bob2D * ticFrac;
+	}
+
+	void Interpolate3D(FVector3& t, FVector3& r, double ticFrac) const
+	{
+		t = PrevBobInfo.Translation * (1.0 - ticFrac) + BobInfo.Translation * ticFrac;
+		r = PrevBobInfo.Rotation * (1.0 - ticFrac) + BobInfo.Rotation * ticFrac;
+	}
 };
 
 class DPSprite : public DObject
@@ -156,8 +239,8 @@ void P_CalcSwing (player_t *player);
 void P_SetPsprite(player_t *player, PSPLayers id, FState *state, bool pending = false);
 void P_BringUpWeapon (player_t *player);
 void P_FireWeapon (player_t *player);
-void P_BobWeapon (player_t *player, float *x, float *y, double ticfrac);
-void P_BobWeapon3D (player_t *player, FVector3 *translation, FVector3 *rotation, double ticfrac);
+void P_BobWeapon(player_t* player);
+void P_BobWeapon3D(player_t* player);
 DAngle P_BulletSlope (AActor *mo, FTranslatedLineTarget *pLineTarget = NULL, int aimflags = 0);
 AActor *P_AimTarget(AActor *mo);
 
@@ -166,5 +249,8 @@ void DoReadyWeaponToFire(AActor *self, bool primary = true, bool secondary = tru
 void DoReadyWeaponToSwitch(AActor *self, bool switchable = true);
 
 void A_ReFire(AActor *self, FState *state = NULL);
+
+extern EPSPBobType BobType;
+extern FPlayerBob PlayerBob[MAXPLAYERS];
 
 #endif	// __P_PSPR_H__

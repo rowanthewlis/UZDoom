@@ -154,7 +154,10 @@ namespace swrenderer
 
 			viewport->CenterY = viewheight / 2;
 
-			P_BobWeapon(viewport->viewpoint.camera->player, &bobx, &boby, Net_ModifyFrac(viewport->viewpoint.TicFrac));
+			BobType = PSPB_2D;
+			FVector2 interp = PlayerBob[Thread->Viewport->viewpoint.camera->player - players].Interpolate2D(Net_ModifyFrac(viewport->viewpoint.TicFrac));
+			bobx = interp.X;
+			boby = interp.Y;
 
 			// Interpolate the main weapon layer once so as to be able to add it to other layers.
 			if ((weapon = viewport->viewpoint.camera->player->FindPSprite(PSP_WEAPON)) != nullptr)
