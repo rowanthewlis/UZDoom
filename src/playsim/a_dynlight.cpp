@@ -443,15 +443,7 @@ void FDynamicLight::UpdateLocation()
 		radius = intensity * 2.0f;
 		if (radius < m_currentRadius * 2) radius = m_currentRadius * 2;
 
-		
-		//[Dithered] To be clear, this is Boon's idea that I threw in to test. Didn't notice a massive difference
-		//but not thoroughly tested. Out of my depth at this point though :)
-		//Only relink if the light moved more than 25% of its radius.
-		
-		//if (X() != oldx || Y() != oldy || radius != oldradius) //old code if revert needed
-		
-		double moveDist = (X() - oldx) * (X() - oldx) + (Y() - oldy) * (Y() - oldy);
-		if (moveDist > radius * radius * 0.025 || radius != oldradius) 
+		if (X() != oldx || Y() != oldy || radius != oldradius) //old code if revert needed
 		{
 			//Update the light lists
 			LinkLight();
