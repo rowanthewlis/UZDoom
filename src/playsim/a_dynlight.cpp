@@ -399,7 +399,7 @@ void FDynamicLight::UpdateLocation()
 		Pos = target->Vec3Offset(m_off.X * c + m_off.Y * s, m_off.X * s - m_off.Y * c, m_off.Z + target->GetBobOffset());
 
 		//[Dithered] Need to check for teleport/ portals and clear interpolation
-		double distCheck = 128.0 const;
+		const double distCheck = 128.0;
 		double distSquared = (Pos.X - PrevPos.X) * (Pos.X - PrevPos.X) + 
 		                (Pos.Y - PrevPos.Y) * (Pos.Y - PrevPos.Y) + 
 		                (Pos.Z - PrevPos.Z) * (Pos.Z - PrevPos.Z);
