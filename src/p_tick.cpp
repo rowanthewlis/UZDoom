@@ -283,4 +283,5 @@ void P_Ticker (void)
 		{
 			light->SaveInterpolationState();
 		}
+	}
 }
