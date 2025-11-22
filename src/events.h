@@ -463,7 +463,7 @@ struct EventManager
 	// register
 	bool RegisterHandler(DStaticEventHandler* handler);
 	// unregister
-	bool UnregisterHandler(DStaticEventHandler* handler);
+	bool UnregisterHandler(DStaticEventHandler* handler, bool destroying);
 	// find
 	bool CheckHandler(DStaticEventHandler* handler);
 	// check type
