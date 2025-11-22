@@ -455,7 +455,7 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 
 	// [Nash] is a flat sprite
 	const bool isWallSprite = (actor != nullptr) && (spritetype == RF_WALLSPRITE);
-	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)|| (actor->renderflags & RF_PIVOTTOP)) || (particle && !(particle->flags & SPF_ROLLCENTER));
+	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)) || (particle && !(particle->flags & SPF_ROLLCENTER));
 	const bool pivotTop = ((actor != nullptr) && (actor->renderflags & RF_PIVOTTOP));
 
 	FVector2 offset = FVector2( offx, offy );
