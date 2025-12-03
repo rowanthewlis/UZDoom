@@ -356,6 +356,8 @@ DefaultOptionMenu
 OptionMenu "OptionsMenu" protected
 {
 	Title "$OPTMNU_TITLE"
+	StaticText " "
+	Submenu "SIREN Options", 			"Siren"
 	Submenu "$OPTMNU_CONTROLS",			"CustomizeControls"
 	Submenu "$OPTMNU_MOUSE",			"MouseOptions"
 	Submenu "$OPTMNU_JOYSTICK",			"JoystickOptions"
@@ -385,6 +387,111 @@ OptionMenu "OptionsMenu" protected
 	Command "$OPTMNU_OPENCONFIG",		"openconfig"
 	Command "$OPTMNU_OPENSCREENSHOTS",	"openscreenshots"
 	Command "$OPTMNU_OPENSAVES",		"opensaves"
+}
+
+OptionMenu "Siren" protected
+{
+  Title "Siren Options"
+  StaticText " "
+  Submenu "Weapons", "Weapons"
+  Submenu "Appearance", "Screen Shaders"
+  Submenu "Interactions", "Interactions"
+  Submenu "View Roll", "Viewroll"
+  Submenu "Flashlight", "Flashlight"
+  //Submenu "Monsters", "Monsters"
+}
+OptionValue "Toggles"
+{
+    0, "Hold"
+    1, "Toggle"
+}
+
+OptionValue "U2P"
+{
+    0, "By Touch + Press Use"
+    1, "Press Use Only"
+}
+
+OptionValue "Blood"
+{
+    0, "Off"
+    2, "Lowest"
+    7, "Low"
+    15, "Normal"
+}
+
+OptionValue "Abler"
+{
+    0, "Disabled"
+    1, "Enabled"
+}
+OptionMenu "Weapons"
+{
+  Title "Weapon Options"
+  StaticText " "
+  Option "Enable CrossHair",		"cl_crosshair",			"OnOff"
+
+  Option "Weapons affect FOV",		"cl_AffectFOV",			"OnOff"
+
+  Option "Aim Down Sights",		"cl_ADSToggle",			"Toggles"
+
+   Option "Weapons tilt with movement",		"si_Weaponroll",			"OnOff"
+ 
+}
+OptionMenu "Monsters"
+{
+  Title "Choose between SIREN monsters or Vanilla"
+  Option "Siren Monsters",		"Si_replacemonsters",			"OnOff"
+  staticText""
+  staticText "This should only be set at the beginning of a play session"
+  staticText "Changing this mid-map will have no effect."
+}
+OptionMenu "Screen Shaders"
+{
+  Title "Appearance Options"
+  StaticText " "
+  Option "Blur effect when poisoned",		"cl_PoisonEffect",			"Abler"
+  Option "Blood Amount",		"si_bloodamount",			"Blood"
+ 
+}
+
+OptionMenu "Interactions"
+{
+  Title "Interactions"
+	StaticText " "
+  Option "Palm of inrteraction",		"cl_palm",			"OnOff"
+
+  Option "Press Use to Pick Up",		"Si_UseToPickup",			"U2P"
+
+  Option "On Screen Tooltips",		"Si_tooltips",			"OnOff" 
+
+}
+
+OptionMenu "WeaponTilt"
+{
+  Title "Tilt weapons during movement"
+  StaticText " "
+  Option "Weapon Tilt",		"cl_Weaponroll",			"OnOff"
+ 
+}
+
+OptionMenu "Viewroll"
+{
+  Title "Tilt the player view during movement"
+  StaticText " "
+  Option "View Roll",		"si_Viewroll",			"OnOff"
+ 
+}
+
+OptionMenu "Flashlight"
+{
+  Title "Flashlight"
+  staticText""
+  staticText "Just give me a brighter flashlight!"
+  staticText "This may reduce performance."
+  staticText""
+  Option "Brighter Flashlight",		"cl_FLBrighter",			"Abler"
+ 
 }
 
 //-------------------------------------------------------------------------------------------
@@ -514,34 +621,50 @@ OptionValue "Layouts"
 
 OptionMenu "CustomizeControls" protected
 {
-	Title "$CNTRLMNU_TITLE"
+	//Title "$CNTRLMNU_TITLE"
 
-	Submenu    "$CNTRLMNU_ACTION"      , "ActionControlsMenu"
+		//[Dithered] Stop being a lazy fuck and do this properly in language.
+	StaticText ""
+	StaticText "Controls"
+	StaticText "----------------"
+	Control    "$CNTRLMNU_ATTACK"           , "+attack"
+	Control    "$CNTRLMNU_ALTATTACK"        , "+altattack"
+	Control    "$CNTRLMNU_RELOAD"           , "+reload"
+	Control    "Quick Melee"             , "+User2"
+
+	StaticText ""
+	Control    "$CNTRLMNU_USE"              , "+use"
+	Control    "Use Inventory Item"             , "+zoom"
+	Control    "$CNTRLMNU_NEXTITEM"     , "invnext"
+	Control    "$CNTRLMNU_PREVIOUSITEM" , "invprev"
+
+	StaticText ""
+	Control    "Flashlight"             , "use Flashlight"
+	Control    "Open PDA"             , "use PDAReader"
+	Control    "Quick Heal"             , "use QuickHeal"
+
+	StaticText ""
+	StaticText "More"
+	StaticText "----------------"
+
+	Submenu    "Movement"      , "ActionControlsMenu"
 	Submenu    "$CNTRLMNU_WEAPONS"     , "WeaponsControlMenu"
-	Submenu    "$CNTRLMNU_INVENTORY"   , "InventoryControlsMenu"
+	//Submenu    "$CNTRLMNU_INVENTORY"   , "InventoryControlsMenu"
 	Submenu    "$MAPCNTRLMNU_CONTROLS" , "MapControlsMenu"
-	Submenu    "$CNTRLMNU_OTHER"       , "OtherControlsMenu"
-	Submenu    "$CNTRLMNU_POPUPS"      , "StrifeControlsMenu"
-	Submenu    "$MNU_MULTIPLAYER"        , "ChatControlsMenu"
+	//Submenu    "$CNTRLMNU_OTHER"       , "OtherControlsMenu"
+	//Submenu    "$CNTRLMNU_POPUPS"      , "StrifeControlsMenu"
+	
+	Submenu    "Legacy Controls"      , "OtherControlsMenu"
+
 	StaticText ""
 	Option "$CNTRLMNU_LAYOUT",			"cl_defaultconfiguration", "Layouts"
 	SafeCommand "$OPTMNU_DEFAULTS",		"resetb2defaults"
+	StaticText ""
 }
 
 OptionMenu "ActionControlsMenu" protected
 {
-	Title "$CNTRLMNU_ACTION_TITLE"
-	ScrollTop 2
-	StaticTextSwitchable "$CNTRLMNU_SWITCHTEXT1", "$CNTRLMNU_SWITCHTEXT2", "ControlMessage"
-
-	StaticText ""
-	Control    "$CNTRLMNU_ATTACK"           , "+attack"
-	Control    "$CNTRLMNU_ALTATTACK"        , "+altattack"
-	Control    "$CNTRLMNU_RELOAD"           , "+reload"
-	Control    "$CNTRLMNU_ZOOM"             , "+zoom"
-
-	StaticText ""
-	Control    "$CNTRLMNU_USE"              , "+use"
+	Title "Movement Controls"
 
 	StaticText ""
 	Control    "$CNTRLMNU_FORWARD"          , "+forward"
@@ -550,31 +673,19 @@ OptionMenu "ActionControlsMenu" protected
 	Control    "$CNTRLMNU_MOVERIGHT"        , "+moveright"
 
 	StaticText ""
-	Control    "$CNTRLMNU_TURNLEFT"         , "+left"
-	Control    "$CNTRLMNU_TURNRIGHT"        , "+right"
-	Control    "$CNTRLMNU_TURN180"          , "turn180"
-
-	StaticText ""
 	Control    "$CNTRLMNU_JUMP"             , "+jump"
 	Control    "$CNTRLMNU_CROUCH"           , "+crouch"
 	Control    "$CNTRLMNU_TOGGLECROUCH"     , "crouch"
 
 	StaticText ""
-	Control    "$CNTRLMNU_MOVEUP"           , "+moveup"
-	Control    "$CNTRLMNU_MOVEDOWN"         , "+movedown"
-	Control    "$CNTRLMNU_LAND"             , "land"
-
-	StaticText ""
-	Control    "$CNTRLMNU_MOUSELOOK"        , "+mlook"
-	Control    "$CNTRLMNU_KEYBOARDLOOK"     , "+klook"
-	Control    "$CNTRLMNU_LOOKUP"           , "+lookup"
-	Control    "$CNTRLMNU_LOOKDOWN"         , "+lookdown"
-	Control    "$CNTRLMNU_CENTERVIEW"       , "centerview"
-
-	StaticText ""
 	Control    "$CNTRLMNU_RUN"              , "+speed"
 	Control    "$CNTRLMNU_TOGGLERUN"        , "toggle cl_run"
-	Control    "$CNTRLMNU_STRAFE"           , "+strafe"
+	Control    "Walk"           		, "+strafe"
+	
+	ScrollTop 2
+	StaticTextSwitchable "$CNTRLMNU_SWITCHTEXT1", "$CNTRLMNU_SWITCHTEXT2", "ControlMessage"
+
+
 }
 
 OptionMenu "ChatControlsMenu" protected
@@ -615,10 +726,11 @@ OptionMenu "WeaponsControlMenu" protected
 	Control    "$CNTRLMNU_SLOT0"          , "slot 0"
 
 	StaticText ""
-	Control    "$CNTRLMNU_USER1"            , "+user1"
-	Control    "$CNTRLMNU_USER2"            , "+user2"
-	Control    "$CNTRLMNU_USER3"            , "+user3"
-	Control    "$CNTRLMNU_USER4"            , "+user4"
+	Control    "$CNTRLMNU_DROPWEAPON"   , "weapdrop"
+	//Control    "$CNTRLMNU_USER1"            , "+user1"
+	//Control    "$CNTRLMNU_USER2"            , "+user2"
+	//Control    "$CNTRLMNU_USER3"            , "+user3"
+	//Control    "$CNTRLMNU_USER4"            , "+user4"
 }
 
 OptionMenu "InventoryControlsMenu" protected
@@ -732,6 +844,9 @@ OptionMenu "OtherControlsMenu" protected
 	StaticText ""
 	Control    "$CNTRLMNU_QUICKSAVE"       , "quicksave"
 	Control    "$CNTRLMNU_QUICKLOAD"       , "quickload"
+
+	StaticText ""
+	Submenu    "$MNU_MULTIPLAYER"        , "ChatControlsMenu"
 }
 
 OptionMenu "StrifeControlsMenu" protected

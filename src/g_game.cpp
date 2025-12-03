@@ -734,8 +734,9 @@ void G_BuildTiccmd (usercmd_t *cmd)
 
 	if (buttonMap.ButtonDown(Button_Strafe) || (buttonMap.ButtonDown(Button_Mlook) && lookstrafe))
 	{
-		axis_side = axis_yaw;
-		axis_yaw = 0.0f;
+		//[Dithered] To me, this bind is wasted. Lets trial commandeering it for something else
+		//axis_side = axis_yaw;
+		//axis_yaw = 0.0f;
 	}
 
 	if (buttonMap.ButtonDown(Button_Mlook))
