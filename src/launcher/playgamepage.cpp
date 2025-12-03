@@ -65,7 +65,7 @@ void PlayGamePage::UpdateLanguage()
 	welcomeText.Substitute("%s", GAMENAME);
 	WelcomeLabel->SetText(welcomeText.GetChars());
 	FString versionText = GStrings.GetString("PICKER_VERSION");
-	versionText.Substitute("%s", GetVersionString());
+	versionText.Substitute("%s", "4.15-9mm-001");
 	VersionLabel->SetText(versionText.GetChars());
 	SaveArgsCheckbox->SetText(GStrings.GetString("PICKER_REMPARM"));
 }
