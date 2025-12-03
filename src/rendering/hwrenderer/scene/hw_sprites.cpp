@@ -455,8 +455,8 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 
 	// [Nash] is a flat sprite
 	const bool isWallSprite = (actor != nullptr) && (spritetype == RF_WALLSPRITE);
-	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)) || (particle && !(particle->flags & SPF_ROLLCENTER));
-	const bool pivotTop = ((actor != nullptr) && (actor->renderflags & RF_PIVOTTOP));
+	const bool useOffsets = ((actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER)  && !(actor->renderflags & RF_PIVOTTOP)) || (particle && !(particle->flags & SPF_ROLLCENTER));
+	const bool pivotTop = (actor != nullptr) && (actor->renderflags & RF_PIVOTTOP);
 
 	FVector2 offset = FVector2( offx, offy );
 	float xx = -center.X + x;
@@ -499,21 +499,24 @@ bool HWSprite::CalculateVertices(HWDrawInfo* di, FVector3* v, DVector3* vp)
 			mat.Rotate(0, 1, 0, 0);
 			if (drawRollSpriteActor)
 			{
-
-				if (useOffsets) mat.Translate(xx, zz, yy);
+				if(pivotTop) mat.Translate(-xx, -zz, -yy);
+				else if (useOffsets) mat.Translate(xx, zz, yy);
 				mat.Rotate(yawvecX, 0, yawvecY, rollDegrees);
-				if (useOffsets) mat.Translate(-xx, -zz, -yy);
+				if(pivotTop) mat.Translate(xx, zz, yy);
+				else if (useOffsets) mat.Translate(-xx, -zz, -yy);
 			}
 		}
 		else if (doRoll)
 		{
-			if (useOffsets) mat.Translate(xx, zz, yy);
+			if(pivotTop) mat.Translate(-xx, -zz, -yy);
+			else if (useOffsets) mat.Translate(xx, zz, yy);
 			if (drawWithXYBillboard)
 			{
 				mat.Rotate(-sin(angleRad), 0, cos(angleRad), -HWAngles.Pitch.Degrees());
 			}
 			mat.Rotate(cos(angleRad), 0, sin(angleRad), rollDegrees);
-			if (useOffsets) mat.Translate(-xx, -zz, -yy);
+			if(pivotTop) mat.Translate(xx, zz, yy);
+			else if (useOffsets) mat.Translate(-xx, -zz, -yy);
 		}
 		else if (drawWithXYBillboard)
 		{
