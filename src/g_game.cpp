@@ -640,10 +640,10 @@ void G_BuildTiccmd (usercmd_t *cmd)
 	// let movement keys cancel each other out
 	if (strafe)
 	{
-		if (buttonMap.ButtonDownDigital(Button_Right))
+		/*if (buttonMap.ButtonDownDigital(Button_Right))
 			side += sidemove[speed];
 		if (buttonMap.ButtonDownDigital(Button_Left))
-			side -= sidemove[speed];
+			side -= sidemove[speed];*/
 	}
 	else
 	{
@@ -795,8 +795,8 @@ void G_BuildTiccmd (usercmd_t *cmd)
 		fly = -32768;
 	}
 
-	if (strafe || lookstrafe)
-		side += xs_CRoundToInt(mousex * m_side);
+	/*if (strafe || lookstrafe)
+		side += xs_CRoundToInt(mousex * m_side);*/
 
 	mousex = mousey = 0;
 
