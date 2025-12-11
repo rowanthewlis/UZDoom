@@ -2997,12 +2997,11 @@ static bool System_DispatchEvent(event_t* ev)
 			G_AddViewPitch(look, true);
 			ev->y = 0;
 		}
-		if (!buttonMap.ButtonDown(Button_Strafe) && !lookstrafe)
-		{
-			int turn = int(ev->x * m_yaw * 16.0);
-			G_AddViewAngle(turn, true);
-			ev->x = 0;
-		}
+		
+		int turn = int(ev->x * m_yaw * 16.0);
+		G_AddViewAngle(turn, true);
+		ev->x = 0;
+		
 		if (ev->x == 0 && ev->y == 0)
 		{
 			return true;
