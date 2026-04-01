@@ -209,6 +209,12 @@ int main (int argc, char **argv)
 
 	const int result = GameMain();
 
+	if (SDL_I_CheckForRestart())
+	{
+		I_TryRestart(argv);
+	}
+
+	SDL_SetRelativeMouseMode(SDL_FALSE);
 	SDL_Quit();
 
 	return result;
