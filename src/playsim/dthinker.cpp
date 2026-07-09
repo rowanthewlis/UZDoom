@@ -319,25 +319,35 @@ void FThinkerCollection::RunClientSideThinkers(FLevelLocals* Level)
 
 void FThinkerCollection::DestroyAllThinkers(bool fullgc)
 {
-	int i;
-	bool error = false;
+	// If something was destroyed, run it again to make sure nothing got spawned and moved
+	// to a previous stat num in the iteration process. This guarantees nothing gets skipped.
+	bool destroyed = false;
+	do
+	{
+		destroyed = false;
+		bool error = false;
 
-	for (i = 0; i <= MAX_STATNUM; i++)
-	{
-		if (i != STAT_TRAVELLING && i != STAT_STATIC)
+		bool didDestroy = false;
+		for (int i = 0; i <= MAX_STATNUM; i++)
 		{
-			error |= Thinkers[i].DoDestroyThinkers();
-			error |= FreshThinkers[i].DoDestroyThinkers();
+			if (i != STAT_TRAVELLING && i != STAT_STATIC)
+			{
+				error |= Thinkers[i].DoDestroyThinkers(didDestroy);
+				destroyed |= didDestroy;
+				error |= FreshThinkers[i].DoDestroyThinkers(didDestroy);
+				destroyed |= didDestroy;
+			}
 		}
-	}
-	error |= Thinkers[MAX_STATNUM + 1].DoDestroyThinkers();
-	if (fullgc) GC::FullGC();
-	if (error)
-	{
-		ClearGlobalVMStack();
-		if (fullgc) I_Error("DestroyAllThinkers failed");
-		else I_FatalError("DestroyAllThinkers failed");
-	}
+		error |= Thinkers[MAX_STATNUM + 1].DoDestroyThinkers(didDestroy);
+		destroyed |= didDestroy;
+		if (fullgc) GC::FullGC();
+		if (error)
+		{
+			ClearGlobalVMStack();
+			if (fullgc) I_Error("DestroyAllThinkers failed");
+			else I_FatalError("DestroyAllThinkers failed");
+		}
+	} while (destroyed);
 }
 
 //==========================================================================
@@ -571,10 +581,14 @@ bool FThinkerList::IsEmpty() const
 
 void FThinkerList::DestroyThinkers()
 {
-	if (DoDestroyThinkers())
+	bool destroyed = false;
+	do
 	{
-		I_Error("DestroyThinkers failed");
-	}
+		if (DoDestroyThinkers(destroyed))
+		{
+			I_Error("DestroyThinkers failed");
+		}
+	} while (destroyed);
 }
 
 //==========================================================================
@@ -583,13 +597,14 @@ void FThinkerList::DestroyThinkers()
 //
 //==========================================================================
 
-bool FThinkerList::DoDestroyThinkers()
+bool FThinkerList::DoDestroyThinkers(bool& destroyed)
 {
+	destroyed = false;
 	bool error = false;
 	if (Sentinel != nullptr)
 	{
 		// Taking down the linked list live is far too dangerous in case something goes wrong. So first copy all elements into an array, take down the list and then destroy them.
-
+		destroyed = true;
 		TArray<DThinker *> toDelete;
 		DThinker *node = Sentinel->NextThinker;
 		while (node != Sentinel)

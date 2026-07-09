@@ -59,7 +59,7 @@ struct FThinkerList
 	DThinker *GetTail() const;
 	bool IsEmpty() const;
 	void DestroyThinkers();
-	bool DoDestroyThinkers();
+	bool DoDestroyThinkers(bool& destroyed);
 	void RemoveTravellers(bool saveGame);
 	void OnLoad();
 	int TickThinkers(FThinkerList *dest);	// Returns: # of thinkers ticked
